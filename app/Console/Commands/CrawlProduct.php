@@ -44,7 +44,6 @@ class CrawlProduct extends Command
                     'sale_price' => $productDetails['price'],
                 ]);
 
-                // Log the product details
                 Log::channel('product')->info('Product Details:', $productDetails);
 
                 $this->info('Product details have been logged successfully!');

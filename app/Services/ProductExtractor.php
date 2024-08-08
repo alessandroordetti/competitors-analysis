@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
+
 class ProductExtractor
 {
     public function extractProductDetails(string $html): array
@@ -14,10 +17,13 @@ class ProductExtractor
         $titleNode = $xpath->query('//*[@itemprop="name"]/h1')->item(0);
         $title = $titleNode ? $titleNode->textContent : 'N/A';
 
-        // Cerca l'elemento con class="product-offert-price" per il prezzo
-        $offerPrice = $xpath->query('//*[contains(@class, "product-offert-price")]')->item(0);
-        $basePrice = $xpath->query('//*[contains(@class, "product-base-price")]')->item(0);
-        $price = $offerPrice ? (float) str_replace('€', '', $offerPrice->textContent) : (float) str_replace('€', '', $basePrice->textContent);
+        $offerPriceNode = $xpath->query('//*[contains(@class, "product-offert-price")]')->item(0);
+        $basePriceNode = $xpath->query('//*[contains(@class, "product-base-price ")]')->item(0);
+
+        // Estrai il prezzo base e rimuovi il simbolo dell'euro
+        $basePrice = $basePriceNode ? str_replace('€', '', $basePriceNode->textContent) : 'N/A';
+        $price = trim($basePrice) ? (float) trim($basePrice) : 0.0;
+
 
         // Cerca l'elemento con class="container-sidebar-right-product-code" per lo SKU
         $skuNode = $xpath->query('//meta[@itemprop="sku"]')->item(0);
