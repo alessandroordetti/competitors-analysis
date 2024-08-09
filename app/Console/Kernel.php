@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Command;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -15,7 +15,20 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         // Aggiungi il tuo comando qui
         \App\Console\Commands\WriteLog::class,
+        \App\Console\Commands\CrawlProduct::class
     ];
+
+    /**
+     * Definisce la pianificazione dei comandi dell'applicazione.
+     *
+     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @return void
+     */
+    protected function schedule(Schedule $schedule)
+    {
+        // Pianifica il job CrawlProduct per essere eseguito ogni minuto
+        $schedule->command('extract:product-links "https://www.strumentimusicali.net/product_info.php/"')->everyMinute();
+    }
 
     /**
      * Registra i comandi Artisan dell'applicazione.
