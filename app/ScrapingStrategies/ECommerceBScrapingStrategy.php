@@ -13,20 +13,27 @@ class ECommerceBScrapingStrategy implements ScrapingStrategyInterface
         @$dom->loadHTML($htmlPage);
         $xpath = new \DOMXPath($dom);
 
-        $titleNode = $xpath->query('//*[@itemprop="name"]/h1')->item(0);
+        $titleNode = $xpath->query('//*[contains(@class, "vtex-store-components-3-x-productBrand")]')->item(0);
         $title = $titleNode ? $titleNode->textContent : 'N/A';
 
-        $offerPriceNode = $xpath->query('//*[contains(@class, "product-offert-price")]')->item(0);
-        $basePriceNode = $xpath->query('//*[contains(@class, "product-base-price ")]')->item(0);
+        $priceNode = $xpath->query('//*[contains(@class, "vtex-product-price-1-x-currencyContainer")]')->item(0);
+        // Rimuovi il simbolo di valuta e le virgole dalle migliaia
+        $priceText = str_replace(['$', ','], '', $priceNode->textContent);
 
-        $basePrice = $basePriceNode ? str_replace('€', '', $basePriceNode->textContent) : 'N/A';
-        $price = trim($basePrice) ? (int) str_replace('.', '', $basePrice) : 0.0;
+        // Converti la stringa in un numero float, utilizzando un punto come separatore decimale
+        $price = number_format((float)$priceText, 2, '.', '');
 
-        $skuNode = $xpath->query('//meta[@itemprop="sku"]')->item(0);
-        $sku = $skuNode ? $skuNode->getAttribute('content') : 'N/A';
+        $skuNode = $xpath->query('//*[contains(@class, "cosmo-store-theme-8-x-separator")]/following-sibling::span')->item(0);
+        if ($skuNode) {
+            // Estrai il testo dopo "Model: "
+            $skuText = trim($skuNode->textContent);
+            if (strpos($skuText, 'Model: ') !== false) {
+                $sku = trim(str_replace('Model: ', '', $skuText));
+            }
+        }
 
         return [
-            'competitor' => 'StrumentiMusicali',
+            'competitor' => 'Cosmomusic',
             'title' => trim($title),
             'price' => trim($price),
             'sku' => trim($sku)

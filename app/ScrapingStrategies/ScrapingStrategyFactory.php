@@ -6,9 +6,9 @@ class ScrapingStrategyFactory
 {
     public static function createStrategy($url)
     {
-        if (strpos($url, 'centrochitarre.com') !== false) {
+        if (strpos($url, 'ginomusica.it') !== false) {
             return new ECommerceAScrapingStrategy();
-        } elseif (strpos($url, 'strumentimusicali.net') !== false) {
+        } elseif (strpos($url, 'cosmomusic.ca') !== false) {
             return new ECommerceBScrapingStrategy();
         }
         return null;
