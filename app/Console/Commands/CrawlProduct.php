@@ -5,28 +5,25 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Services\ProductExtractor;
 use App\Models\Competitor;
+use App\ScrapingStrategies\ScrapingStrategyFactory;
 
 class CrawlProduct extends Command
 {
-    protected $signature = 'crawl-strumentimusicali:product {url}';
+    protected $signature = 'crawl-ecommerce:product {url}';
     protected $description = 'Crawl the specified product page and log its details';
-
-    protected $productExtractor;
-
-    public function __construct(ProductExtractor $productExtractor)
-    {
-        parent::__construct();
-        $this->productExtractor = $productExtractor;
-    }
 
     public function handle()
     {
         $url = $this->argument('url');
 
-        $urlComponents = explode('/', $url);
-        $fullName = explode('.', $urlComponents[2]);
+        // Determina la strategia di scraping in base all'URL
+        $productExtractor = ScrapingStrategyFactory::createStrategy($url);
+
+        if (!$productExtractor) {
+            $this->error('No valid scraping strategy found for this URL.');
+            return;
+        }
 
         try {
             $response = Http::withOptions([
@@ -34,17 +31,20 @@ class CrawlProduct extends Command
             ])->get($url);
 
             if ($response->successful()) {
-                $htmlContent = $response->body();
-                $productDetails = $this->productExtractor->extractProductDetails($htmlContent);
+                $htmlPage = $response->body();
 
+                // Estrai i dati utilizzando la strategia selezionata
+                $data = $productExtractor->extractData($htmlPage);
+
+                // Salva i dati nel database
                 Competitor::create([
-                    'competitor' => $fullName[1],
-                    'sku' => $productDetails['sku'],
-                    'product_title' => $productDetails['title'],
-                    'sale_price' => $productDetails['price'],
+                    'competitor' => $data['competitor'],
+                    'sku' => $data['sku'],
+                    'product_title' => $data['title'],
+                    'sale_price' => $data['price'],
                 ]);
 
-                Log::channel('product')->info('Product Details:', $productDetails);
+                Log::channel('product')->info('Product Details:', $data);
 
                 $this->info('Product details have been logged successfully!');
             } else {
