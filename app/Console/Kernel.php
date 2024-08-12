@@ -26,8 +26,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // crawl-ecommerce:product "https://www.centrochitarre.com/martin-d-45-reimagined-dm06600646.html"
         // Pianifica il job CrawlProduct per essere eseguito ogni minuto
-        $schedule->command('extract:product-links "https://www.strumentimusicali.net/product_info.php/"')->everyMinute();
+        $schedule->command('crawl-ecommerce:product "https://www.cosmomusic.ca/martin-d-45-acoustic-guitar---natural/p"')->everyMinute();
+        $schedule->command('crawl-ecommerce:product "https://www.ginomusica.it/it/martin-d45-reimagined-p-7399.html?srsltid=AfmBOoqBwdcr1dLY05DZHRfRfAj_WOjSbWLPskquaS8tGX_fCftVHX5K"')->everyMinute();
     }
 
     /**
