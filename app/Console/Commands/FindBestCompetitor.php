@@ -34,9 +34,10 @@ class FindBestCompetitor extends Command
         BestCompetitor::truncate();
 
         // Query per trovare il competitor con il prezzo più basso per ogni SKU
-        $lowestPrices = Competitor::select('competitor', 'sku', 'product_title', DB::raw('MIN(sale_price) as lowest_price'))
-            ->groupBy('sku', 'competitor', 'product_title')
-            ->orderBy('lowest_price')
+        $lowestPrices = Competitor::select('sku', 'product_title', 'competitor', DB::raw('MIN(sale_price) as lowest_price'))
+            ->whereIn('competitor', ['Cosmomusic', 'CentroChitarre'])
+            ->groupBy('sku', 'product_title')
+            ->orderBy('lowest_price', 'ASC')
             ->get();
 
         foreach ($lowestPrices as $price) {
@@ -44,7 +45,6 @@ class FindBestCompetitor extends Command
                 ->where('sale_price', $price->lowest_price)
                 ->first();
 
-            // Popolare la tabella best_competitors con i risultati
             BestCompetitor::create([
                 'sku' => $price->sku,
                 'product_title' => $price->product_title,
